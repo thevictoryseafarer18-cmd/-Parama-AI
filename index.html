@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parama – AI career companion</title>
+<style>
+:root{box-sizing:border-box;--bg:#f6faf9;--card:#fff;--tx:#161d1c;--mut:#4a5856;--pri:#1f5f5b;--onp:#fff;--pc:#cdebe7;--bd:#d5e2e0;--warn:#ffe9a8;--wt:#3b2f00;--red:#d32f2f;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1514;--card:#182120;--tx:#e6efee;--mut:#a9bab7;--pri:#7fd6ce;--onp:#003733;--pc:#00504b;--bd:#2a3a38;--warn:#574500;--wt:#ffe9a8}}
+:root[data-theme="dark"]{--bg:#0f1514;--card:#182120;--tx:#e6efee;--mut:#a9bab7;--pri:#7fd6ce;--onp:#003733;--pc:#00504b;--bd:#2a3a38;--warn:#574500;--wt:#ffe9a8}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:720px;margin:0 auto;padding:16px 16px 90px}
+h1{font-size:1.6rem;margin:.2em 0}h2{font-size:1.15rem;margin:1em 0 .4em}p{margin:.3em 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:10px 0}
+.pc{background:var(--pc)}.mut{color:var(--mut);font-size:.88rem}
+.badge{display:inline-block;background:var(--warn);color:var(--wt);border-radius:99px;padding:1px 8px;font-size:.7rem;font-weight:700}
+.ai{color:var(--pri);font-size:.75rem;font-weight:600}
+label{display:block;font-size:.85rem;margin:10px 0 3px;font-weight:600}
+input,select,textarea{width:100%;font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px}
+textarea{min-height:80px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--pri);background:transparent;color:var(--pri);padding:9px 14px;min-height:44px}
+button.p{background:var(--pri);color:var(--onp)}button.w{width:100%;margin-top:8px}button.t{border-color:transparent}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;border-radius:0;font-size:.72rem;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:0}
+nav button.on{color:var(--pri);font-weight:700}nav span{font-size:1.2rem}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0}.chips button{white-space:nowrap;min-height:36px;padding:4px 12px;border-radius:99px}
+.chips button.on{background:var(--pc);font-weight:700}
+.msg{max-width:88%;padding:10px 12px;border-radius:14px;margin:8px 0;white-space:pre-wrap}
+.me{margin-left:auto;background:var(--pc)}.bot{background:var(--card);border:1px solid var(--bd)}
+.rec{display:flex;align-items:center;gap:8px;color:var(--red);font-weight:600}.dot{width:12px;height:12px;border-radius:50%;background:var(--red);animation:b 1s infinite}
+@keyframes b{50%{opacity:.3}}
+.warn{background:var(--warn);color:var(--wt);border-radius:10px;padding:10px;margin:8px 0;font-size:.9rem}
+.card:not(.pc):not(.mas){background:color-mix(in srgb,var(--card) 90%,transparent)}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bgc{position:absolute;width:170px;opacity:.16}
+.dd{position:absolute;font-size:1.8rem;opacity:.1;animation:fl 8s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-12px) rotate(8deg)}}
+@media(prefers-reduced-motion:reduce){.dd{animation:none}}
+.mas{display:flex;align-items:center;gap:12px;background:var(--pc)}
+.mc{width:96px;flex:none}.mc svg{width:100%;height:auto;display:block}
+.bub{position:relative;background:var(--card);border:2px solid var(--tx);border-radius:16px;padding:10px 12px;font-weight:600;flex:1}
+.bub:before{content:"";position:absolute;left:-10px;top:26px;border:8px solid transparent;border-right-color:var(--tx);border-left:0}
+</style></head><body><div class="bg" id="bg" aria-hidden="true"></div><div id="app"></div><nav id="nav" aria-label="Main"></nav>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const csv=s=>String(s||'').split(/[,;]/).map(x=>x.trim()).filter(Boolean);
+const SAMPLE_P={name:'Meera Krishnan',college:'Sample Institute of Technology',degree:'B.Tech',branch:'Computer Science',year:'3rd year',skills:['Kotlin','Python','SQL','Git','Data Structures'],roles:['Android Developer','Data Analyst'],locations:['Chennai','Remote'],cgpa:'8.4',goal:'Land an Android developer internship for summer 2027',exp:'Campus Event Finder (Kotlin, team of 3): Android app listing college events.\nCoding club volunteer: ran weekly practice sessions.'};
+const O=[
+['s1','Android Developer Intern','Northwind Apps','Chennai','Hybrid','Internship','B.Tech/BE, 3rd–4th year, Kotlin basics','2026-11-15'],
+['s2','Data Analyst Intern','Contoso Insights','Bengaluru','On-site','Internship','Any branch, SQL + Excel','2026-11-30'],
+['s3','Software Engineer (Campus Hire)','Fabrikam Systems','Hyderabad','On-site','Job','Final year, CGPA cutoff per employer','2026-12-10'],
+['s4','Remote Python Intern','Globex Labs','Remote','Remote','Internship','2nd year onwards, Python','2026-12-01'],
+['s5','UX Design Intern','Initech Studio','Chennai','Hybrid','Internship','Portfolio with 2 case studies','2026-11-20'],
+['s6','Campus Coding Hackathon','Umbrella Tech Club','Pune','On-site','Hackathon','Teams of 2–4 students','2026-10-28']
+].map(a=>({id:a[0],title:a[1],org:a[2]+' (fictional)',loc:a[3],mode:a[4],type:a[5],elig:a[6],dl:a[7],src:'Sample dataset',checked:'2026-10-01 (sample)'}));
+const STAT=['Saved','Preparing','Ready to review','Applied','Interview','Closed'];
+const PATHS=[['Android Developer',['Kotlin','Jetpack Compose','Git','REST APIs','Data Structures']],['Data Analyst',['SQL','Excel','Python','Statistics','Data Visualization']],['Software Developer',['Data Structures','Git','SQL','Python','Problem Solving']],['UX Designer',['Figma','User Research','Prototyping']]];
+let S={p:null,saved:[],grades:[],chat:[],resume:null,tab:'home',plus:false,vers:[],iv:null,jdr:null,cover:'',freeRole:'',f:{q:'',type:'All',mode:'All'},draft:'',scale:'10',edit:null,listening:false,read:false,msg:''};
+try{const r=JSON.parse(localStorage.getItem('parama')||'null');if(r)Object.assign(S,{p:r.p,saved:r.saved||[],grades:r.grades||[],resume:r.resume||null,plus:!!r.plus,vers:r.vers||[],freeRole:r.freeRole||''})}catch(e){}
+const save=()=>{try{localStorage.setItem('parama',JSON.stringify({p:S.p,saved:S.saved,grades:S.grades,resume:S.resume,plus:S.plus,vers:S.vers,freeRole:S.freeRole}))}catch(e){}};
+const go=t=>{S.tab=t;render();window.scrollTo(0,0)};
+const toast=m=>{S.msg=m;render();setTimeout(()=>{S.msg='';render()},3500)};
+
+// ---------- comic office characters (original SVG art)
+const FACES={
+tired:`<circle cx="52" cy="56" r="6" fill="#fff"/><circle cx="78" cy="56" r="6" fill="#fff"/><circle cx="53" cy="58" r="2.5" fill="#222"/><circle cx="77" cy="58" r="2.5" fill="#222"/><path d="M45 66q7 4 14 0M71 66q7 4 14 0" stroke="#8a5a3a" stroke-width="2" fill="none"/><path d="M54 80h22" stroke="#222" stroke-width="3" stroke-linecap="round"/>`,
+panic:`<circle cx="52" cy="54" r="8" fill="#fff"/><circle cx="78" cy="54" r="8" fill="#fff"/><circle cx="52" cy="55" r="2.5" fill="#222"/><circle cx="78" cy="55" r="2.5" fill="#222"/><path d="M42 40l16 5M88 40l-16 5" stroke="#222" stroke-width="3" stroke-linecap="round"/><ellipse cx="65" cy="78" rx="8" ry="10" fill="#7a1f1f"/><path d="M98 36q5 8 0 12q-5-4 0-12z" fill="#6ec1ff"/>`,
+smug:`<circle cx="52" cy="56" r="9" fill="none" stroke="#222" stroke-width="3"/><circle cx="78" cy="56" r="9" fill="none" stroke="#222" stroke-width="3"/><path d="M61 56h8" stroke="#222" stroke-width="3"/><circle cx="52" cy="57" r="2.5" fill="#222"/><circle cx="78" cy="57" r="2.5" fill="#222"/><path d="M52 74q13 12 26 0" stroke="#222" stroke-width="3" fill="none" stroke-linecap="round"/>`};
+const EXTRA={
+mug:`<rect x="102" y="104" width="26" height="28" rx="4" fill="#fff" stroke="#333" stroke-width="3"/><path d="M128 111q12 2 0 14" stroke="#333" stroke-width="3" fill="none"/><path d="M110 98q-4-8 2-12M120 98q-4-8 2-12" stroke="#999" stroke-width="2" fill="none"/>`,
+papers:`<g fill="#fff" stroke="#999"><rect x="4" y="20" width="22" height="28" transform="rotate(-20 15 34)"/><rect x="104" y="14" width="22" height="28" transform="rotate(25 115 28)"/><rect x="2" y="90" width="22" height="28" transform="rotate(15 13 104)"/></g>`,
+board:`<rect x="96" y="96" width="40" height="40" rx="4" fill="#fff" stroke="#333" stroke-width="3"/><text x="116" y="123" font-size="22" text-anchor="middle">📧</text>`};
+const CHARS=[
+{shirt:'#3b6ea8',tie:'#d32f2f',skin:'#f1c27d',hair:'#3b2a1a',face:'tired',extra:'mug',alt:'Tired office worker holding a coffee mug'},
+{shirt:'#a8503b',tie:'#ffcc00',skin:'#c68642',hair:'#1b1b1b',face:'panic',extra:'papers',alt:'Panicking office worker with flying papers'},
+{shirt:'#5a4a8a',tie:'#1f5f5b',skin:'#ffdbac',hair:'#8a5a2b',face:'smug',extra:'board',alt:'Smug office worker next to a whiteboard with an email icon'}];
+const svgChar=c=>`<svg viewBox="0 0 140 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.alt}"><rect x="30" y="92" width="70" height="58" rx="16" fill="${c.shirt}"/><rect x="58" y="92" width="14" height="18" fill="#fff"/><path d="M65 94l-6 28 6 8 6-8z" fill="${c.tie}"/><circle cx="65" cy="56" r="34" fill="${c.skin}"/><path d="M30 52c2-30 68-32 70 0-14-12-56-12-70 0z" fill="${c.hair}"/>${FACES[c.face]}${EXTRA[c.extra]}</svg>`;
+const JOKES=[[2,'This meeting could\'ve been an email.'],[1,'Deadline: tomorrow. Me: starting tomorrow.'],[0,'Entry-level job: "5 years experience required". Me: 🙂'],[0,'"Proficient in Excel" ≠ "Googled VLOOKUP once".'],[2,'Interview tip: never say "I\'m a perfectionist". Say something true.'],[1,'Update resume? Sure, right after I clean my desk. And the fridge.']];
+function mascot(){const j=JOKES[(S.joke||0)%JOKES.length];return`<div class="card mas"><div class="mc">${svgChar(CHARS[j[0]])}</div><div class="bub"><div>${esc(j[1])}</div><button class="t" onclick="S.joke=(S.joke||0)+1;render()">😄 Another one</button></div></div>`}
+function bgHtml(){const pos=[['left:-24px;bottom:70px;transform:rotate(-8deg)',0],['right:-20px;top:90px;transform:rotate(7deg)',1],['left:-30px;top:38%;transform:rotate(10deg)',2],['right:-26px;bottom:110px;transform:rotate(-6deg)',0]];return pos.map(p=>`<div class="bgc" style="${p[0]}">${svgChar(CHARS[p[1]])}</div>`).join('')+['☕','📎','📧','💼','🗂️','⏰'].map((e,i)=>`<span class="dd" style="left:${12+i*15}%;top:${(i*37)%80+8}%">${e}</span>`).join('')}
+
+// ---------- logic
+function reply(q){const p=S.p,t=q.toLowerCase(),role=p.roles[0]||'your target role',sk=p.skills.slice(0,4).join(', ')||'the skills you add to your profile';
+if(/resume|\bcv\b/.test(t))return`For a ${role} resume, open with a 2-line summary, then projects that show ${sk}. Use numbers only when they're real and verifiable. Draft one in Profile → Resume builder and edit every line.`;
+if(/interview|question/.test(t))return`Practice questions for ${role}:\n1. Walk me through a project you're proud of. What was your part?\n2. How would you debug something that works on your laptop but fails elsewhere?\n3. Explain a core concept from your coursework simply.\nAnswer in ~90 seconds each, then send me your answer and I'll suggest improvements.`;
+if(/intern|placement|job/.test(t))return`For ${role}, use Explore to filter by type and location. Save a few, confirm eligibility yourself, and tailor one resume per role. Placements are competitive, so treat this as a plan, not a promise.`;
+if(/skill|learn|roadmap|gap/.test(t))return`Check Explore → Roadmap to compare your skills with ${role} requirements. Pick one gap, learn it, and prove it with a small project.`;
+if(/cgpa|gpa|grade/.test(t))return`Use the CGPA calculator in Profile and pick your college's scale, since scales differ. CGPA is one signal; projects and skills matter too.`;
+return`Your goal: "${p.goal||'not set yet'}". A good next step this week: improve one resume section, save two opportunities, or practice one interview question. Tell me which and I'll help.`}
+function ask(q){q=q.trim();if(!q)return;if(!S.plus&&S.chat.filter(m=>m.me).length>=5){toast('You have used your 5 free AI questions. Parama Plus removes the limit.');go('plus');return}S.chat.push({me:1,t:q});S.draft='';render();
+setTimeout(()=>{const r=reply(q);S.chat.push({t:r});render();if(S.read)speak(r)},500)}
+function speak(t){if(!('speechSynthesis' in window)){toast('Read-aloud isn\'t available in this browser.');return}speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t))}
+let rec=null;
+function mic(){if(S.listening){cancelMic();return}
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){toast('Voice input isn\'t supported in this browser. Please type your question.');return}
+if(!confirm('Use the microphone?\n\nParama listens only while the red "Listening" indicator is on. Your browser\'s speech service may send audio to its provider. You can review and edit the text before sending.'))return;
+rec=new SR();rec.lang=navigator.language||'en-US';rec.interimResults=false;
+rec.onresult=e=>{S.draft=e.results[0][0].transcript;S.listening=false;render()};
+rec.onerror=e=>{S.listening=false;render();toast(e.error==='not-allowed'?'Microphone permission was denied. You can still type.':'Voice input had a problem. You can type instead.')};
+rec.onend=()=>{if(S.listening){S.listening=false;render()}};
+try{rec.start();S.listening=true;render()}catch(e){toast('Could not start voice input.')}}
+function cancelMic(){try{rec&&rec.abort()}catch(e){}S.listening=false;render()}
+function genResume(){const p=S.p,role=($('#role')||{}).value.trim();if(!role){toast('Enter a target role first.');return}
+if(!S.plus){if(S.freeRole&&S.freeRole.toLowerCase()!==role.toLowerCase()){toast('Free plan has one resume target ('+S.freeRole+'). Tailored versions for other roles are in Parama Plus.');return}S.freeRole=role}
+const keys=(PATHS.find(x=>role.toLowerCase().includes(x[0].toLowerCase()))||[0,[]])[1];
+const sk=[...p.skills].sort((a,b)=>keys.some(k=>k.toLowerCase()==b.toLowerCase())-keys.some(k=>k.toLowerCase()==a.toLowerCase()));
+const miss=['Contact details'];
+let edu=[[p.degree,p.branch].filter(Boolean).join(' in '),p.college].filter(Boolean).join(' — ');if(!edu){edu='[Add your degree and college]';miss.push('Education')}
+if(p.year)edu+='\nYear of study: '+p.year;if(p.cgpa){edu+=`\nCGPA: ${p.cgpa} [confirm grading scale, e.g. /10]`;miss.push('CGPA grading scale')}
+let exp=p.exp;if(!exp){exp='[Add 1–2 projects: what you built, tools used, and a result you can verify]';miss.push('Projects and experience')}
+if(!sk.length)miss.push('Skills');
+S.resume={role,miss,sec:[['Contact',(p.name||'[Your name]')+'\n[Add email / phone / LinkedIn]'],['Summary',`${p.degree||'College'} student seeking a ${role} opportunity.`+(sk.length?` Skills include ${sk.slice(0,5).join(', ')}.`:'')+(p.goal?` Goal: ${p.goal}.`:'')],['Education',edu],['Skills',sk.join(' • ')||'[Add your skills]'],['Projects & Experience',exp]]};save();render()}
+function share(text,title){if(navigator.share){navigator.share({title,text}).catch(()=>{})}else{navigator.clipboard&&navigator.clipboard.writeText(text).then(()=>toast('Copied to clipboard.'),()=>toast('Copy failed.'))}}
+function cgpa(){const c=S.grades.reduce((a,g)=>a+g.c,0);return c>0?S.grades.reduce((a,g)=>a+g.c*g.p,0)/c:null}
+function addGrade(){const n=$('#gn').value.trim(),c=parseFloat($('#gc').value),g=parseFloat($('#gp').value),max=S.scale==='custom'?parseFloat($('#cm').value):parseFloat(S.scale);
+if(!n||!(c>0)){toast('Enter a name and credits above 0.');return}
+if(!(g>=0)||(max>0&&g>max)){toast('Grade points must be between 0 and '+(max||'your max')+'.');return}
+if(S.edit!=null){S.grades=S.grades.map(x=>x.id===S.edit?{id:x.id,n,c,p:g}:x);S.edit=null}else S.grades.push({id:Date.now(),n,c,p:g});save();render()}
+function toggleSave(id){const i=S.saved.findIndex(x=>x.id===id);if(i>=0)S.saved.splice(i,1);else{if(!S.plus&&S.saved.length>=3){toast('Free plan saves up to 3 opportunities. Remove one or try Parama Plus.');return}const o=O.find(x=>x.id===id);S.saved.push({id,status:'Saved',dl:o.dl,notes:''})}save();render()}
+function setApp(id,k,v){const a=S.saved.find(x=>x.id===id);a[k]=v;save()}
+function openOpp(id){const o=O.find(x=>x.id===id);if(confirm(`You're about to leave Parama to view "${o.title}". Parama won't submit anything for you; check eligibility and the deadline yourself first.\n\nThis is sample data, so there is no real page to open. Continue?`))toast('Sample listing: no real page exists. Real listings would open the source link here.')}
+function saveProfile(){const v=id=>$('#'+id).value.trim();if(!v('f_name')){toast('Please enter your name.');return}
+if(v('f_cgpa')&&isNaN(Number(v('f_cgpa')))){toast('CGPA must be a number, or leave it blank.');return}
+S.p={name:v('f_name'),college:v('f_college'),degree:v('f_degree'),branch:v('f_branch'),year:v('f_year'),skills:csv(v('f_skills')),roles:csv(v('f_roles')),locations:csv(v('f_loc')),cgpa:v('f_cgpa'),goal:v('f_goal'),exp:v('f_exp')};save();go('home')}
+function wipe(){if(confirm('Delete your profile, saved opportunities and grades from this browser?')){try{localStorage.removeItem('parama')}catch(e){}S={...S,p:null,saved:[],grades:[],chat:[],resume:null,tab:'home',plus:false,vers:[],freeRole:'',iv:null,jdr:null,cover:''};render()}}
+
+// ---------- Parama Plus (demo billing) + premium tools
+const PRICE='₹199 / month (demo price)';
+const UP=`<button class="t" onclick="go('plus')">⭐ Week-by-week roadmap in Plus</button>`;
+function lock(why){return`<div class="card pc"><b>⭐ Parama Plus feature</b><p>${why}</p><button class="p" onclick="go('plus')">See Parama Plus</button></div>`}
+function subscribe(){S.plus=true;save();toast('Parama Plus is active (demo, nothing charged).');render()}
+function cancelPlus(){if(confirm('Cancel Parama Plus (demo)? Your data stays.')){S.plus=false;save();render()}}
+function vPlus(){return`<button class="t" onclick="go('profile')">← Back</button><h1>Parama Plus ⭐</h1>
+<div class="card"><b>Free</b><p class="mut">Profile, CGPA calculator, 5 AI questions, 3 saved opportunities, 1 resume target, 1 practice question, short roadmap.</p></div>
+<div class="card pc"><b>Plus adds</b><ul><li>Unlimited AI questions</li><li>Unlimited saved opportunities</li><li>Tailored resume versions for every role</li><li>Week-by-week roadmaps</li><li>Full 5-question mock interviews with feedback</li><li>Job match checker</li><li>Cover letter drafts</li></ul></div>
+<div class="card"><b style="font-size:1.3rem">${PRICE}</b><p class="mut">Renews monthly until cancelled; cancel any time. Demo mode: nothing is charged and no payment details are collected. In the Android app, billing runs through Google Play via RevenueCat.</p></div>
+${S.plus?`<p><b>Parama Plus is active.</b></p><button class="w" onclick="cancelPlus()">Cancel Plus (demo)</button>`:`<button class="p w" onclick="subscribe()">Start Parama Plus (demo)</button>`}
+<p class="mut">Your profile data stays viewable and exportable on every plan.</p>`}
+
+function verHtml(){if(!S.plus)return`<p class="mut">⭐ Plus: save a tailored version for each role.</p>`;
+return`<button class="w" onclick="saveVer()">Save as version</button>${S.vers.map((v,i)=>`<div class="card row"><div style="flex:3"><b>${esc(v.role)}</b></div><button onclick="loadVer(${i})">Load</button><button onclick="S.vers.splice(${i},1);save();render()">Delete</button></div>`).join('')}`}
+function saveVer(){S.vers.push(JSON.parse(JSON.stringify(S.resume)));save();toast('Version saved.')}
+function loadVer(i){S.resume=JSON.parse(JSON.stringify(S.vers[i]));save();render()}
+
+const QS={
+and:['Walk me through an app or project you built. What was your part?','How would you handle a screen rotation or process death in an Android app?','How would you structure an app into layers, and why?','Tell me about a bug that took long to fix. How did you solve it?','Why this internship, and what do you want to learn?'],
+dat:['Walk me through a data project: question, data, method, result.','How would you find and handle missing values?','Explain a SQL JOIN to a non-technical teammate.','A chart shows sales up but profit down. What do you check?','Why data analysis for your career?'],
+sw:['Walk me through a project you built and your part in it.','Explain a data structure you used and why.','How do you debug something that works on your laptop but fails elsewhere?','Tell me about teamwork on a project. What went wrong?','Where do you want to be in two years?'],
+gen:['Tell me about yourself.','Describe a project or achievement you are proud of.','Tell me about a time you worked in a team.','Describe a mistake and what you learned.','Why this role?']};
+function qset(r){r=r.toLowerCase();return /android|mobile/.test(r)?QS.and:/data|analy/.test(r)?QS.dat:/software|developer|engineer/.test(r)?QS.sw:QS.gen}
+function fb(a){const w=a.trim().split(/\s+/).filter(Boolean).length,t=a.toLowerCase();let sc=2;const g=[],im=[];
+if(w>=40&&w<=180){sc+=2;g.push('Good length: detailed but focused.')}else if(w<40)im.push('Add detail: aim for about 60-120 words (30-90 seconds spoken).');else{sc+=1;im.push('Trim it: long answers lose the listener. Keep the key points.')}
+if(/\bi (built|made|wrote|led|designed|fixed|created|implemented|learned|used|worked)\b/.test(t)){sc+=2;g.push('You said what YOU did, which interviewers look for.')}else im.push('Use "I" statements: what exactly did you do, not just the team?');
+if(/\d/.test(a)){sc+=1;g.push('A real number makes the answer concrete.')}else im.push('Add one real, verifiable number or outcome if you have one.');
+if(/(because|so that|result|resulted|learned|improved|reduced|helped)/.test(t)){sc+=2;g.push('You explained the reasoning or result.')}else im.push('End with the result or what you learned.');
+if(/(situation|task|first|then|finally|after that)/.test(t))sc+=1;
+return{sc:Math.min(10,sc),g,im}}
+function startIv(){const role=($('#ivr')||{}).value||S.p.roles[0]||'';S.iv={role,qs:qset(role),n:0,res:[]};render()}
+function subIv(){const a=$('#iva').value;if(a.trim().split(/\s+/).length<5){toast('Write at least a short answer first.');return}S.iv.res[S.iv.n]={a,f:fb(a)};render()}
+function vInterview(){const v=S.iv,back=`<button class="t" onclick="S.iv=null;go('home')">← Back</button><h1>Interview practice</h1>`;
+if(!v)return back+`${fld('ivr','Target role',S.p.roles[0]||'')}<p class="mut">${S.plus?'Mock interview: 5 questions with feedback.':'Free: 1 practice question. Plus unlocks the full 5-question mock interview.'}</p><button class="p w" onclick="startIv()">Start practice</button>`;
+const max=Math.min(S.plus?5:1,v.qs.length);
+if(v.n>=max){const avg=(v.res.reduce((a,r)=>a+r.f.sc,0)/Math.max(1,v.res.length)).toFixed(1);return back+`<div class="card pc"><div class="mut">Average score</div><b style="font-size:1.8rem">${avg} / 10</b><p class="mut">Automated feedback on structure and clarity, not technical correctness. Practice out loud too.</p></div>${v.res.map((r,i)=>`<div class="card"><b>Q${i+1}: ${esc(v.qs[i])}</b><p>Score ${r.f.sc}/10</p></div>`).join('')}${S.plus?'':lock('Do the full 5-question mock interview with feedback on every answer.')}<button class="p w" onclick="S.iv=null;render()">Practice again</button>`}
+const r=v.res[v.n];
+return back+`<p class="mut">Question ${v.n+1} of ${max} · ${esc(v.role)}</p><div class="card pc"><b>${esc(v.qs[v.n])}</b></div><label for="iva">Your answer (say it out loud first, then type the key points)</label><textarea id="iva" style="min-height:120px" ${r?'readonly':''}>${esc(r?r.a:'')}</textarea>${r?`<div class="card"><p class="ai">✨ Automated feedback</p><b>Score ${r.f.sc}/10</b>${r.f.g.length?`<p>👍 ${r.f.g.map(esc).join('<br>👍 ')}</p>`:''}${r.f.im.length?`<p>💡 ${r.f.im.map(esc).join('<br>💡 ')}</p>`:''}</div><button class="p w" onclick="S.iv.n++;render()">${v.n+1>=max?'See summary':'Next question'}</button>`:`<button class="p w" onclick="subIv()">Get feedback</button>`}`}
+
+const SK=['kotlin','java','python','sql','excel','git','javascript','react','html','css','c++','data structures','algorithms','jetpack compose','android','rest','api','figma','statistics','tableau','power bi','machine learning','aws','docker','communication','teamwork','problem solving','agile','linux','flutter','swift','mongodb','django','node'];
+function runJd(){const raw=$('#jd').value,T=' '+raw.toLowerCase().replace(/[^a-z0-9+# ]/g,' ').replace(/\s+/g,' ')+' ';
+if(raw.length<30){toast('Paste a longer job description.');return}
+const found=SK.filter(k=>T.includes(' '+k+' '));S.jdr={jd:raw,found,have:found.filter(k=>S.p.skills.some(x=>x.toLowerCase()==k))};render()}
+function vJd(){const r=S.jdr;return`<button class="t" onclick="go('home')">← Back</button><h1>Job match checker ⭐</h1>`+(S.plus?`<p class="mut">Paste a job description. Parama compares its skill keywords with your profile. Add a skill to your profile only if you truly have it.</p><label for="jd">Job description</label><textarea id="jd" style="min-height:140px">${esc(r?r.jd:'')}</textarea><button class="p w" onclick="runJd()">Check match</button>${r?(r.found.length?`<div class="card pc"><div class="mut">Keyword match</div><b style="font-size:1.8rem">${Math.round(r.have.length/r.found.length*100)}%</b><div class="mut">${r.have.length} of ${r.found.length} skill keywords in the listing are in your profile</div></div><div class="card"><b>You have</b><p>${esc(r.have.join(', ')||'none matched')}</p><b>In the listing, not in your profile</b><p>${esc(r.found.filter(k=>!r.have.includes(k)).join(', ')||'none')}</p><p class="mut">Learn or add these only if they're true for you. This checks keywords, not your hiring chances.</p></div>`:`<div class="card mut">No known skill keywords found in that text.</div>`):''}`:lock('Compare any job description with your skills and see what to learn next.'))}
+
+function genCover(){const c=$('#cco').value.trim(),r=$('#crl').value.trim();if(!r){toast('Enter the role.');return}
+const p=S.p,sk=p.skills.slice(0,4).join(', '),who=[p.year,p.degree,p.branch].filter(Boolean).join(' ')||'[your year, degree, branch]';
+S.cover=`Dear Hiring Team${c?' at '+c:''},\n\nI am a ${who} student${p.college?' at '+p.college:''} applying for the ${r} role${c?' at '+c:''}.${sk?' My skills include '+sk+'.':' [Add your key skills.]'}\n\n${p.exp?'Relevant experience: '+p.exp.split('\n')[0]:'[Add one project or experience that fits this role.]'}\n\n${p.goal?'My goal is to '+p.goal.charAt(0).toLowerCase()+p.goal.slice(1)+'.':'[Add why this role interests you.]'} I would value the chance to learn from your team and contribute.\n\nThank you for your time.\n\nSincerely,\n${p.name||'[Your name]'}\n[Add email / phone]`;S.coverRole=r;S.coverCo=c;render()}
+function vCover(){return`<button class="t" onclick="go('home')">← Back</button><h1>Cover letter ⭐</h1>`+(S.plus?`${fld('cco','Company (optional)',S.coverCo||'')}${fld('crl','Role',S.coverRole||S.p.roles[0]||'')}<button class="p w" onclick="genCover()">Generate draft</button>${S.cover?`<p class="ai">✨ AI-generated draft. Edit before use.</p><div class="warn">Parama only used your profile. Fill every [bracket] yourself.</div><textarea id="cvt" style="min-height:300px" oninput="S.cover=this.value">${esc(S.cover)}</textarea><button class="p w" onclick="share(S.cover,'Cover letter')">Share / copy text</button>`:''}`:lock('Draft a cover letter from your profile, ready to edit.'))}
+
+// ---------- views
+const fld=(id,l,v,h,ta)=>`<label for="${id}">${l}</label>${ta?`<textarea id="${id}">${esc(v)}</textarea>`:`<input id="${id}" value="${esc(v)}">`}${h?`<div class="mut">${h}</div>`:''}`;
+function vForm(first){const p=S.p||{name:'',college:'',degree:'',branch:'',year:'',skills:[],roles:[],locations:[],cgpa:'',goal:'',exp:''};
+return`${first?`${mascot()}<h1>Welcome to Parama</h1><p class="mut">Your career companion. Only your name is required; skip the rest and edit anytime. Your details stay in this browser, and Parama asks before using the microphone or opening any link.</p>`:`<h1>Edit profile</h1>`}
+${fld('f_name','Name *',p.name,'Used to greet you.')}${fld('f_college','College / university',p.college)}
+<div class="row"><div>${fld('f_degree','Degree',p.degree)}</div><div>${fld('f_branch','Branch / major',p.branch)}</div></div>
+${fld('f_year','Year of study',p.year)}${fld('f_skills','Skills (comma separated)',(p.skills||[]).join(', '),'Optional. Used for roadmap and resume.')}
+${fld('f_roles','Preferred roles',(p.roles||[]).join(', '),'e.g. Android Developer, Data Analyst')}${fld('f_loc','Preferred locations',(p.locations||[]).join(', '))}
+${fld('f_cgpa','CGPA (optional)',p.cgpa,'Skip if you prefer. Your college scale may differ.')}${fld('f_goal','Career goal',p.goal,'',1)}
+${fld('f_exp','Experience / projects (optional)',p.exp,'Parama only uses what you write.',1)}
+<button class="p w" onclick="saveProfile()">${first?'Create my profile':'Save changes'}</button>
+${first?`<button class="w" onclick="S.p=SAMPLE_P;save();go('home')">Try with a sample student (demo)</button>`:`<button class="w t" onclick="go('profile')">Cancel</button>`}`}
+function vHome(){const p=S.p,role=p.roles[0]||'your target role';
+const n=!S.saved.length?['Find your first opportunities',`Browse the sample list and save a few that fit ${role}.`,'explore']:!S.resume?[`Draft a resume for ${role}`,'Generate an editable draft from your profile.','resume']:['Practice interview questions',`Ask the assistant for ${role} questions.`,'assistant'];
+return`<h1>Hello, ${esc(p.name.split(' ')[0])}${S.plus?' <span class="badge">PLUS</span>':''}</h1>${mascot()}${S.plus?'':`<div class="card pc"><b>⭐ Parama Plus</b><p class="mut">Unlimited AI, tailored resumes, full mock interviews, job match checker and more.</p><button class="p" onclick="go('plus')">See Plus</button></div>`}<div class="card pc"><div class="mut">Your career goal</div><b>${esc(p.goal||'Add a goal in your profile to personalize guidance.')}</b></div>
+<div class="card"><div class="mut">Next recommended step</div><b>${esc(n[0])}</b><p>${esc(n[1])}</p><button class="p" onclick="go('${n[2]}')">Go</button></div>
+<div class="row"><button onclick="go('resume')">📄 Resume</button><button onclick="go('cgpa')">🧮 CGPA</button></div>
+<div class="row" style="margin-top:8px"><button onclick="go('interview')">🎤 Interview</button><button onclick="go('jd')">🎯 Job match ${S.plus?'':'⭐'}</button></div>
+<h2>Saved opportunities</h2>${S.saved.length?S.saved.slice(0,3).map(a=>{const o=O.find(x=>x.id===a.id);return`<div class="card"><b>${esc(o.title)}</b> <span class="badge">SAMPLE</span><div class="mut">${esc(o.org)} · ${o.loc}<br>Status: ${a.status} · Deadline: ${esc(a.dl)||'not set'}</div></div>`}).join(''):`<div class="card mut">Nothing saved yet. Save opportunities from Explore.</div>`}`}
+function vExplore(){const f=S.f,L=O.filter(o=>(!f.q||(o.title+o.org).toLowerCase().includes(f.q.toLowerCase()))&&(f.type=='All'||o.type==f.type)&&(f.mode=='All'||o.mode==f.mode));
+const chips=(k,arr)=>`<div class="chips">${arr.map(x=>`<button class="${f[k]==x?'on':''}" onclick="S.f.${k}='${x}';render()">${x}</button>`).join('')}</div>`;
+const online=navigator.onLine?'':`<div class="warn">You're offline. Showing saved sample data.</div>`;
+const road=PATHS.map(([t,req])=>{const have=req.filter(r=>S.p.skills.some(s=>s.toLowerCase()==r.toLowerCase())),gaps=req.filter(r=>!have.includes(r));return{t,have,gaps,s:have.length*2+(S.p.roles.some(r=>r.toLowerCase().includes(t.toLowerCase()))?3:0)}}).sort((a,b)=>b.s-a.s).slice(0,3);
+return`<h1>Explore</h1>${online}<div class="chips"><button class="${S.sub!='road'?'on':''}" onclick="S.sub='opp';render()">Opportunities</button><button class="${S.sub=='road'?'on':''}" onclick="S.sub='road';render()">Roadmap</button></div>
+${S.sub=='road'?`<p class="ai">✨ AI-generated suggestions, not a verified course catalog</p><p class="mut">Based on your skills and roles. Correct your profile to refine these, and verify courses on platforms you trust.</p>
+${road.map(c=>`<div class="card"><b>${c.t}</b><p class="mut">You have: ${c.have.join(', ')||'none listed yet'}<br>Gaps: ${c.gaps.join(', ')||'none'}</p><ol>${c.gaps.slice(0,S.plus?9:2).map((g,n)=>`<li>${S.plus?'Week '+(n+1)+' · ':''}Learn ${g}: pick a course you trust and finish one small hands-on exercise.</li>`).join('')}<li>Build one portfolio project and ask a mentor for feedback.</li></ol>${S.plus?'':UP}</div>`).join('')}`
+:`<label for="q">Search role or organization</label><input id="q" value="${esc(f.q)}" oninput="S.f.q=this.value;render();const e=$('#q');e.focus();e.setSelectionRange(99,99)">
+${chips('type',['All','Internship','Job','Hackathon'])}${chips('mode',['All','Remote','Hybrid','On-site'])}
+<p class="mut">Sample listings for demo. Real listings would show source and last-checked date.</p>
+${L.length?L.map(o=>{const sv=S.saved.some(x=>x.id==o.id);return`<div class="card"><b>${esc(o.title)}</b> <span class="badge">SAMPLE DATA</span><p>${esc(o.org)} · ${o.loc} · ${o.mode} · ${o.type}</p><div class="mut">Eligibility: ${esc(o.elig)}<br>Deadline: ${o.dl}<br>Source: ${o.src} · Last checked: ${o.checked}</div><button class="${sv?'p':''}" style="margin-top:8px" onclick="toggleSave('${o.id}')">${sv?'★ Saved':'☆ Save'}</button></div>`}).join(''):`<div class="card mut">No matches. Try clearing a filter.</div>`}`}`}
+function vAssistant(){const used=S.chat.filter(m=>m.me).length;
+return`<h1>Assistant ${S.plus?'<span class="badge">PLUS</span>':''}</h1><p class="mut">${S.plus?'Unlimited questions':'Free questions left: '+Math.max(0,5-used)}</p><div class="row"><span class="mut">Using: ${esc(S.p.roles[0]||'no role')} · ${S.p.skills.length} skills · goal ${S.p.goal?'set':'not set'}</span><button class="t" onclick="go('edit')">Correct</button></div>
+<div class="row"><label style="margin:0;display:flex;gap:6px;align-items:center;flex:2"><input type="checkbox" style="width:auto" ${S.read?'checked':''} onchange="S.read=this.checked;if(!this.checked&&window.speechSynthesis)speechSynthesis.cancel()"> Read replies aloud</label><button onclick="window.speechSynthesis&&speechSynthesis.cancel()">⏹ Stop reading</button></div>
+<div class="chips">${['Interview questions','Improve my resume','Skills to learn','Find internships'].map(x=>`<button onclick="ask('${x}')">${x}</button>`).join('')}</div>
+<div aria-live="polite"><div class="msg bot"><div class="ai">✨ AI-generated guidance</div>Hi! I'm Parama. Ask me about careers, resumes, interviews or internships. My answers are guidance, so double-check anything important.</div>
+${S.chat.map(m=>m.me?`<div class="msg me">${esc(m.t)}</div>`:`<div class="msg bot"><div class="ai">✨ AI-generated guidance</div>${esc(m.t)}</div>`).join('')}</div>
+${S.listening?`<div class="rec"><span class="dot"></span>Listening… <button onclick="cancelMic()">✕ Cancel</button></div>`:''}
+<label for="inp">Your question (voice transcripts appear here so you can edit before sending)</label>
+<textarea id="inp" oninput="S.draft=this.value">${esc(S.draft)}</textarea>
+<div class="row"><button onclick="mic()" aria-label="${S.listening?'Stop voice input':'Start voice input'}">${S.listening?'🎙 Stop':'🎤 Speak'}</button><button class="p" onclick="ask($('#inp').value)">Send</button></div>`}
+function vApps(){return`<h1>Applications</h1><p class="mut">Everything here is a draft. Parama never submits anything for you.</p>
+${S.saved.length?S.saved.map(a=>{const o=O.find(x=>x.id==a.id);return`<div class="card"><b>${esc(o.title)}</b> <span class="badge">SAMPLE</span><p class="mut">${esc(o.org)} · ${o.loc}</p>
+<label for="s${a.id}">Status</label><select id="s${a.id}" onchange="setApp('${a.id}','status',this.value)">${STAT.map(s=>`<option ${s==a.status?'selected':''}>${s}</option>`).join('')}</select>
+<label for="d${a.id}">Deadline (YYYY-MM-DD)</label><input id="d${a.id}" value="${esc(a.dl)}" oninput="setApp('${a.id}','dl',this.value)">
+<label for="n${a.id}">Notes</label><textarea id="n${a.id}" oninput="setApp('${a.id}','notes',this.value)">${esc(a.notes)}</textarea>
+<div class="row"><button class="p" onclick="openOpp('${a.id}')">Review &amp; open</button><button onclick="toggleSave('${a.id}')">Remove</button></div></div>`}).join(''):`<div class="card">No applications yet.<br><button class="p" style="margin-top:8px" onclick="go('explore')">Explore opportunities</button></div>`}`}
+function vProfile(){const p=S.p;return`<h1>Profile</h1><div class="card"><b style="font-size:1.2rem">${esc(p.name)}</b><p>${esc([p.degree,p.branch,p.year].filter(Boolean).join(' · '))}</p><p>${esc(p.college)}</p>
+<p class="mut">Skills: ${esc(p.skills.join(', ')||'not added')}<br>Roles: ${esc(p.roles.join(', ')||'not added')}<br>Locations: ${esc(p.locations.join(', ')||'not added')}${p.cgpa?`<br>CGPA: ${esc(p.cgpa)}`:''}</p></div>
+<button class="p w" onclick="go('edit')">Edit profile</button><button class="w" onclick="go('resume')">Resume builder</button><button class="w" onclick="go('cgpa')">CGPA calculator</button>
+<button class="w" onclick="go('interview')">🎤 Interview practice</button><button class="w" onclick="go('jd')">🎯 Job match checker ⭐</button><button class="w" onclick="go('cover')">✉️ Cover letter ⭐</button>
+<button class="${S.plus?'':'p '}w" onclick="go('plus')">${S.plus?'⭐ Parama Plus: active':'⭐ Upgrade to Parama Plus'}</button>
+<button class="w" onclick="share(Object.entries(S.p).map(([k,v])=>k+': '+[].concat(v).join(', ')).join('\\n'),'My Parama profile')">Export my profile</button>
+<button class="w t" onclick="wipe()">Delete all my data</button>
+<p class="mut">Your profile is always viewable and exportable, with or without Plus.</p>`}
+function vResume(){const r=S.resume;return`<button class="t" onclick="go('profile')">← Back</button><h1>Resume builder</h1>
+<label for="role">Target role</label><input id="role" value="${esc(r?r.role:S.p.roles[0]||'')}"><div class="mut">The draft uses only what's in your profile.</div>
+<button class="p w" onclick="genResume()">${r?'Regenerate (replaces edits)':'Generate draft'}</button>
+${r?`<p class="ai">✨ AI-generated draft for ${esc(r.role)}. Review every section.</p><div class="warn">Please confirm or add: ${esc(r.miss.join(', '))}. Parama doesn't invent details; placeholders are in [brackets].</div>
+${r.sec.map((s,i)=>`<label for="r${i}">${s[0]}</label><textarea id="r${i}" oninput="S.resume.sec[${i}][1]=this.value;save()">${esc(s[1])}</textarea>`).join('')}
+<button class="p w" onclick="share(S.resume.sec.map(s=>s[0].toUpperCase()+'\\n'+s[1]).join('\\n\\n'),'Resume')">Share / copy text</button>${verHtml()}`:''}`}
+function vCgpa(){const res=cgpa(),max=S.scale==='custom'?'':S.scale,e=S.grades.find(x=>x.id===S.edit)||{n:'',c:'',p:''};
+return`<button class="t" onclick="go('profile')">← Back</button><h1>CGPA calculator</h1>
+<label for="sc">Grading scale (colleges differ, choose yours)</label><select id="sc" onchange="S.scale=this.value;render()"><option value="10" ${S.scale=='10'?'selected':''}>10-point</option><option value="4" ${S.scale=='4'?'selected':''}>4-point</option><option value="custom" ${S.scale=='custom'?'selected':''}>Custom</option></select>
+${S.scale=='custom'?fld('cm','Maximum grade points',S.cm||'').replace('id="cm"','id="cm" oninput="S.cm=this.value" type="number"'):''}
+${fld('gn','Course or semester',e.n)}<div class="row"><div><label for="gc">Credits</label><input id="gc" type="number" step="any" value="${e.c}"></div><div><label for="gp">Grade points</label><input id="gp" type="number" step="any" value="${e.p}"></div></div>
+<button class="p w" onclick="addGrade()">${S.edit!=null?'Update entry':'Add entry'}</button>
+${S.grades.map(g=>`<div class="card row"><div style="flex:3"><b>${esc(g.n)}</b><div class="mut">${g.c} credits · ${g.p} points</div></div><button onclick="S.edit=${g.id};render()" aria-label="Edit ${esc(g.n)}">Edit</button><button onclick="S.grades=S.grades.filter(x=>x.id!=${g.id});save();render()" aria-label="Remove ${esc(g.n)}">Remove</button></div>`).join('')||'<div class="card mut">No entries yet. Add courses with credits and grade points.</div>'}
+<div class="card pc"><div class="mut">CGPA</div><b style="font-size:1.8rem">${res==null?'—':res.toFixed(2)+(max?' / '+max:'')}</b><div class="mut">Formula: CGPA = Σ(credits × grade points) ÷ Σ credits<br>Percentage conversion is not assumed; check your college's rule.</div></div>`}
+
+function render(){const a=$('#app'),n=$('#nav'),act=document.activeElement&&document.activeElement.id,pos=document.activeElement&&document.activeElement.selectionStart;
+if(!S.p){a.innerHTML=vForm(1);n.style.display='none';return}
+n.style.display='flex';
+const v={home:vHome,explore:vExplore,assistant:vAssistant,apps:vApps,profile:vProfile,resume:vResume,cgpa:vCgpa,edit:()=>vForm(0),plus:vPlus,interview:vInterview,jd:vJd,cover:vCover}[S.tab]||vHome;
+a.innerHTML=(S.msg?`<div class="warn" role="status">${esc(S.msg)}</div>`:'')+v();
+const T=[['home','🏠','Home'],['explore','🔎','Explore'],['assistant','💬','Assistant'],['apps','💼','Applications'],['profile','👤','Profile']];
+const cur=['resume','cgpa','edit','plus','cover'].includes(S.tab)?'profile':['interview','jd'].includes(S.tab)?'home':S.tab;
+n.innerHTML=T.map(t=>`<button class="${cur==t[0]?'on':''}" onclick="go('${t[0]}')" ${cur==t[0]?'aria-current="page"':''}><span aria-hidden="true">${t[1]}</span>${t[2]}</button>`).join('');
+if(act){const e=document.getElementById(act);if(e&&e.tagName!='BUTTON'){e.focus();try{e.setSelectionRange(pos,pos)}catch(x){}}}}
+S.sub='opp';$('#bg').innerHTML=bgHtml();render();addEventListener('online',render);addEventListener('offline',render);
+</script></body></html>

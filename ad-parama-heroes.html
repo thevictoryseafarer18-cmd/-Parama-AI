@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parama Heroes – comic ad</title>
+<style>
+:root{box-sizing:border-box;--bg:#fff3c4;--tx:#111;--card:#fff;--pri:#1f5f5b;--onp:#fff;--mut:#444;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1630;--tx:#f4f0ff;--card:#241f45;--pri:#7fd6ce;--onp:#003733;--mut:#cfc8f0}}
+:root[data-theme="dark"]{--bg:#1a1630;--tx:#f4f0ff;--card:#241f45;--pri:#7fd6ce;--onp:#003733;--mut:#cfc8f0}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.4 "Noto Sans Tamil","Latha","Nirmala UI",system-ui,sans-serif}
+main{max-width:920px;margin:0 auto;padding:16px}
+.title{font:900 clamp(2rem,8vw,3.4rem)/1 Impact,"Arial Black",sans-serif;text-align:center;color:#ffd400;-webkit-text-stroke:2px #111;text-shadow:4px 4px 0 #d32f2f;margin:6px 0 2px;letter-spacing:1px}
+.sub{text-align:center;color:var(--mut);margin:0 0 14px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.panel{position:relative;border:4px solid #111;border-radius:6px;min-height:380px;padding:10px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;box-shadow:6px 6px 0 #111;color:#111}
+.a{background:radial-gradient(circle,rgba(0,0,0,.14) 1.5px,transparent 2px) 0 0/10px 10px,#ffd6e0}
+.b{background:radial-gradient(circle,rgba(0,0,0,.14) 1.5px,transparent 2px) 0 0/10px 10px,#c9e4ff}
+.c{background:radial-gradient(circle,rgba(0,0,0,.14) 1.5px,transparent 2px) 0 0/10px 10px,#d5f5c8}
+.d{background:radial-gradient(circle,rgba(0,0,0,.14) 1.5px,transparent 2px) 0 0/10px 10px,#ffe9a8}
+.e{background:radial-gradient(circle,rgba(0,0,0,.18) 1.5px,transparent 2px) 0 0/10px 10px,#e3d4ff}
+.nar{background:#ffd400;border:3px solid #111;padding:4px 8px;font-weight:800;font-size:.85rem;align-self:flex-start;max-width:90%}
+.art{display:flex;justify-content:center;align-items:flex-end;gap:4px;position:relative}.art svg{width:150px;height:auto}.art.tri svg{width:31%}
+.say{position:relative;background:#fff;border:3px solid #111;border-radius:18px;padding:8px 12px;font-weight:800;text-align:center;align-self:center;max-width:94%}
+.say:after{content:"";position:absolute;left:30px;top:-14px;border:9px solid transparent;border-bottom-color:#111;border-top:0}
+.burst{position:absolute;top:44px;right:8px;width:96px;height:96px;background:#ff3d00;color:#ffd400;font:900 1.1rem/96px Impact,"Arial Black",sans-serif;text-align:center;-webkit-text-stroke:1px #111;transform:rotate(12deg);clip-path:polygon(50% 0,61% 20%,82% 10%,78% 33%,100% 38%,84% 55%,98% 76%,75% 77%,72% 100%,52% 84%,30% 100%,26% 78%,3% 76%,16% 56%,0 38%,22% 33%,18% 10%,39% 20%)}
+.cta{text-align:center;margin:20px 0 6px}
+button{font:inherit;font-weight:800;cursor:pointer;border-radius:10px;border:3px solid #111;background:#ffd400;color:#111;padding:12px 20px;min-height:44px;box-shadow:3px 3px 0 #111;margin:4px}
+button.o{background:var(--card);color:var(--tx)}
+button:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.toast{min-height:1.5em;font-weight:700}.fine{font-size:.78rem;color:var(--mut);text-align:center}
+@media(prefers-reduced-motion:no-preference){.burst{animation:p 1.4s ease-in-out infinite}@keyframes p{50%{transform:rotate(12deg) scale(1.1)}}}
+</style></head><body><main>
+<div class="title">PARAMA HEROES</div>
+<p class="sub">உன் கேரியருக்கு ஒரு நண்பன் · A comic for placement season</p>
+<div class="grid" id="grid"></div>
+<div class="cta"><button id="share">Share this comic</button> <button class="o" id="swap">Switch jokes</button><div class="toast" id="toast" role="status"></div></div>
+<p class="fine">All characters are original. Parama gives guidance, not job guarantees. Sample ad concept; Tanglish lines may need a native-Tamil proofread.</p>
+</main>
+<script>
+const H=(suit,acc,em,cape,skin)=>`<svg viewBox="0 0 140 170" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M32 72L8 152l40-12 22 22 22-22 42 12-24-80z" fill="${cape}" stroke="#111" stroke-width="3"/><rect x="38" y="88" width="64" height="62" rx="16" fill="${suit}" stroke="#111" stroke-width="3"/><circle cx="70" cy="119" r="16" fill="${acc}" stroke="#111" stroke-width="3"/><text x="70" y="127" font-size="22" font-weight="900" text-anchor="middle" fill="#111">${em}</text><circle cx="70" cy="56" r="32" fill="${skin}" stroke="#111" stroke-width="3"/><path d="M38 54q32-36 64 0v8H38z" fill="${suit}" stroke="#111" stroke-width="3"/><path d="M44 60q12-8 24 0zM72 60q12-8 24 0z" fill="#fff" stroke="#111" stroke-width="3"/><circle cx="58" cy="60" r="3" fill="#111"/><circle cx="84" cy="60" r="3" fill="#111"/><path d="M56 78q14 12 28 0" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round"/></svg>`;
+const CAP=H('#2457d6','#fff','Σ','#d32f2f','#f1c27d'),RES=H('#1f8a5b','#fff','CV','#f4f0e6','#c68642'),DEAD=H('#8a3fd6','#ffd400','⏰','#ff7ab8','#ffdbac');
+const VIL=`<svg viewBox="0 0 140 170" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 150q-14-60 20-90 30-30 62 0 34 30 18 90z" fill="#6b3fa0" stroke="#111" stroke-width="3"/><path d="M42 82l22 10M98 82l-22 10" stroke="#111" stroke-width="5" stroke-linecap="round"/><circle cx="52" cy="98" r="8" fill="#fff" stroke="#111" stroke-width="3"/><circle cx="88" cy="98" r="8" fill="#fff" stroke="#111" stroke-width="3"/><path d="M48 128l8-8 8 8 8-8 8 8 8-8 8 8" fill="none" stroke="#111" stroke-width="4"/><rect x="96" y="20" width="36" height="46" fill="#fff" stroke="#111" stroke-width="3" transform="rotate(14 114 43)"/><text x="115" y="48" font-size="11" font-weight="900" text-anchor="middle" fill="#d32f2f" transform="rotate(14 114 43)">ARREAR</text></svg>`;
+const SETS=[[
+ ['a','Meanwhile, in placement season…',VIL,'DR. BACKLOG','Mwahaha! 5 years experience for an entry-level job! Your resume is DOOMED!','1'],
+ ['b','Captain CGPA arrives!',CAP,'Σ!','CGPA = Σ(credits × points) ÷ Σ credits. Your scale, your rules!','1'],
+ ['c','Resume Man swoops in!',RES,'ZAP!','Naan unmaiya mattum ezhudhuven. Unga profile-la irukkurathu dhaan resume-la!','1'],
+ ['d','Deadline Woman saves the day!',DEAD,'TICK-TOCK!','Deadline-a freeze pannitten! Tracker-la date vechukko, nee confirm pannu!','1'],
+ ['e','Join the team!','','POW!','Parama Heroes: Profile → Resume → Roadmap → Apply (nee confirm pannu). Job guarantee illa, aana plan irukku!','3']
+],[
+ ['a','Dr. Backlog attacks!',VIL,'GRR!','Naalaiku padikkalaam nu solra ellarum en army!','1'],
+ ['b','Captain CGPA counters!',CAP,'BAM!','Grading scale-a check pannu. College-ku college maarum!','1'],
+ ['c','Resume Man strikes!',RES,'SWISH!','"Proficient in Excel" nu poi solla maatten. Real skills mattum!','1'],
+ ['d','Deadline Woman strikes!',DEAD,'ZING!','Interview practice-ku time irukku. Naan time-a nirutthuren!','1'],
+ ['e','Victory!','','YAY!','Placement season-la Parama Heroes unga kooda irukkanga!','3']
+]];
+let s=0;
+function draw(){document.getElementById('grid').innerHTML=SETS[s].map(p=>`<section class="panel ${p[0]}"><div class="nar">${p[1]}</div><span class="burst" aria-hidden="true">${p[3]}</span><div class="art ${p[5]=='3'?'tri':''}">${p[5]=='3'?CAP+RES+DEAD:p[2]}</div><div class="say">${p[4]}</div></section>`).join('')}
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;setTimeout(()=>t.textContent='',3000)};
+document.getElementById('swap').onclick=()=>{s=(s+1)%SETS.length;draw()};
+document.getElementById('share').onclick=()=>{const text='PARAMA HEROES 🦸 Captain CGPA, Resume Man & Deadline Woman vs Dr. Backlog!\n'+SETS[s].map(p=>'• '+p[4]).join('\n')+'\n\nParama: career companion for college students (guidance, not job guarantees).';
+ if(navigator.share){navigator.share({title:'Parama Heroes',text}).catch(()=>{})}
+ else if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>toast('Copied! Paste it in your group 😄'),()=>toast('Copy failed.'))}
+ else toast('Sharing is not supported in this browser.')};
+draw();
+</script></body></html>
